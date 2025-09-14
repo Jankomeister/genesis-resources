@@ -1,8 +1,11 @@
 package cz.engeto.genesis_resources.controller;
 
+import cz.engeto.genesis_resources.dto.UserDetailDto;
 import cz.engeto.genesis_resources.entity.User;
 import cz.engeto.genesis_resources.exception.UserNotFoundException;
+import cz.engeto.genesis_resources.mapper.UserMapper;
 import cz.engeto.genesis_resources.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,26 +16,31 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user.getName(), user.getSurname(), user.getPersonID());
+    public UserDetailDto createUser(@RequestBody @Valid User user) {
+        User createdUser = userService.createUser(user.getName(), user.getSurname(), user.getPersonID());
+        return UserMapper.toDetailDto(createdUser);
     }
 
     @GetMapping
-    public List<User> getAllUsers(@RequestParam(required = false) Boolean detail) {
+    public List<?> getAllUsers(@RequestParam(required = false) Boolean detail) {
         List<User> users = userService.getAllUsers();
 
-        if (Boolean.TRUE.equals(detail)) return users; //Dodělám později
-        // Mapování jen id, name, surname pak
-        return users;
+        if (Boolean.TRUE.equals(detail)) {
+            return users.stream().map(UserMapper::toDetailDto).toList();
+        }
+        return users.stream().map(UserMapper::toDto).toList();
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id, @RequestParam(required = false) Boolean detail) {
-        return userService.getUserById(id)
-                .orElseThrow() -> new // OPRAVIT
+    public Object getUser(@PathVariable Long id, @RequestParam(required = false) Boolean detail) {
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Uživatel nenalezen.")); // UDĚLAT SI SVOJÍ VÝJIMKU!
+
+        return Boolean.TRUE.equals(detail) ? UserMapper.toDetailDto(user) : UserMapper.toDto(user);
     }
 
     @PutMapping
