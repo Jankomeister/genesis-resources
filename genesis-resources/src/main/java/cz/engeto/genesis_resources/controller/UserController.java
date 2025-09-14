@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Provider;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -49,7 +51,10 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    public Map<String, String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Uživatel s ID: " + id + " byl úspěšně smazán.");
+        return response;
     }
 }
