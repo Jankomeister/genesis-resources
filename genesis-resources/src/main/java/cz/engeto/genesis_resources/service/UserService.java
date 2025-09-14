@@ -6,26 +6,31 @@ import cz.engeto.genesis_resources.exception.PersonIdAlreadyExistsException;
 import cz.engeto.genesis_resources.exception.UserNotFoundException;
 import cz.engeto.genesis_resources.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PersonIdValidator personIdValidator;
 
     public User createUser(String name, String surname, String personID) {
+        log.info("Vytváření uživatele s osobním ID: {}", personID);
+
         if (userRepository.findByPersonID(personID).isPresent()) {
             throw new PersonIdAlreadyExistsException(personID);
         }
-//        //Kontrola proti seznamu
-//        if (!allowedPersonIds.contains(personID)) {
-//            throw new InvalidPersonIdException(personID);
-//        }
+
+        if (!personIdValidator.isValid(personID)) {
+            throw new IllegalArgumentException("Neplatné osobní ID: " + personID); //VÝJIMKA OPRAVIT?
+        }
 
         User user = User.builder()
                 .name(name)
