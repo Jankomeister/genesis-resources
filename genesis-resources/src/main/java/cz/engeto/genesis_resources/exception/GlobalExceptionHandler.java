@@ -22,4 +22,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidPersonId(InvalidPersonIdException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getLocalizedMessage());
     }
+
+    @ExceptionHandler(PersonIdFileNotFoundException.class)
+    public ResponseEntity<String> handlePersonIdFileNotFound(PersonIdFileNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getLocalizedMessage());
+    }
+
+    @ExceptionHandler(PersonIdLoadException.class)
+    public ResponseEntity<String> handlePersonIdLoad(PersonIdLoadException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getLocalizedMessage());
+    }
 }
