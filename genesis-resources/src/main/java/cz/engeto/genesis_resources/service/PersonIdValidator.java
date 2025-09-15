@@ -1,8 +1,11 @@
 package cz.engeto.genesis_resources.service;
 
+import cz.engeto.genesis_resources.exception.PersonIdFileNotFoundException;
+import cz.engeto.genesis_resources.exception.PersonIdLoadException;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,15 +16,19 @@ public class PersonIdValidator {
     private final Set<String> validPersonIds = new HashSet<>();
 
     public PersonIdValidator() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                getClass().getResourceAsStream("/dataPersonId.txt")))) {
-            String line;
+        try (InputStream is = getClass().getResourceAsStream("/dataPersonId.txt")) {
+            if (is == null) {
+                throw new PersonIdFileNotFoundException("dataPersonId.txt");
+            }
 
-            while ((line = reader.readLine()) != null) {
-                validPersonIds.add(line.trim());
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    validPersonIds.add(line.trim());
+                }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Nepodařilo se načíst dataPersonId.txt", e);
+            throw new PersonIdLoadException("dataPersonId.txt", e);
         }
     }
 
