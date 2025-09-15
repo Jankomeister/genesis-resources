@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -22,14 +21,14 @@ public class UserService {
     private final PersonIdValidator personIdValidator;
 
     public User createUser(String name, String surname, String personID) {
-        log.info("Vytváření uživatele s osobním ID: {}", personID);
+        log.info("Vytvoření uživatele s osobním ID: {}", personID);
 
         if (userRepository.findByPersonID(personID).isPresent()) {
             throw new PersonIdAlreadyExistsException(personID);
         }
 
         if (!personIdValidator.isValid(personID)) {
-            throw new IllegalArgumentException("Neplatné osobní ID: " + personID); //VÝJIMKA OPRAVIT?
+            throw new InvalidPersonIdException(personID);
         }
 
         User user = User.builder()
@@ -46,8 +45,9 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User updateUser(Long id, String name, String surname) {
@@ -60,6 +60,9 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(id);
+        }
         userRepository.deleteById(id);
     }
 }
