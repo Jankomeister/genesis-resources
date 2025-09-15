@@ -7,6 +7,8 @@ import cz.engeto.genesis_resources.mapper.UserMapper;
 import cz.engeto.genesis_resources.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +27,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody @Valid User user) {
         User createdUser = userService.createUser(user.getName(), user.getSurname(), user.getPersonID());
-        return ResponseEntity.ok(UserMapper.toDetailDto(createdUser));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDetailDto(createdUser));
     }
 
     @GetMapping
