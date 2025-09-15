@@ -8,7 +8,7 @@ Projekt vznikl jako závěrečný projekt a simuluje správu uživatelů pro spr
 - **Spring Boot 3.2**
 - **Lombok** - minimalizace boilerplate kódu
 - **Spring Data JPA** - komunikace s databází
-- **H2 Database** - in-memory databáze pro vývoj a testování
+- **MySQL** - produkční databáze
 - **Maven** - build a dependency management
 - **Postman** - testování REST API
 
@@ -19,6 +19,8 @@ Projekt vznikl jako závěrečný projekt a simuluje správu uživatelů pro spr
 - `controller/` – REST API endpointy
 - `data/` – soubory jako `dataPersonId.txt` s personID
 - `resources/` – konfigurace a databázové skripty
+- `sql/` – export MySQL DDL skriptu (`schema_mysql.sql`)
+- `postman/` – Postman kolekce (`GenesisResources.postman_collection.json`)
 
 ## REST API
 ### Uživatelské operace
@@ -41,19 +43,24 @@ Projekt vznikl jako závěrečný projekt a simuluje správu uživatelů pro spr
     - `uuid` – Varchar, UNIQUE, NOT NULL
 
 - `dataPersonId.txt` – seznam dostupných personID, které lze použít při registraci uživatelů
+- `sql/schema_mysql.sql` – SQL skript pro MySQL tabulku `users`
 
 ## Spuštění projektu
-1. Stáhni projekt nebo klonuj repo
-```bash
-git clone <repo-url>
-cd genesis-resources
+1. Spusť MySQL databázi `genesisdb`.
+2. Upravit `application.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/genesisdb
+spring.datasource.username=<user>
+spring.datasource.password=<password>
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
 ```
-2. Postav projekt a spusť
-```bash
-mvn clean install
-mvn spring-boot:run
-```
-3. Testuj API pomocí Postmana (importuj Postman collection GenesisResources.postman_collection.json)
+3. Postav projekt a spusť:
+   ```
+   mvn clean install
+   mvn spring-boot:run
+   ```
+4. Testuj API pomocí Postmana (importuj postman/Genesis Resources API.postman_collection.json)
 
 ## Git workflow
 - Branch pro feature: feature/<co>
