@@ -7,6 +7,7 @@ import cz.engeto.genesis_resources.mapper.UserMapper;
 import cz.engeto.genesis_resources.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Provider;
@@ -22,39 +23,42 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDetailDto createUser(@RequestBody @Valid User user) {
+    public ResponseEntity<?> createUser(@RequestBody @Valid User user) {
         User createdUser = userService.createUser(user.getName(), user.getSurname(), user.getPersonID());
-        return UserMapper.toDetailDto(createdUser);
+        return ResponseEntity.ok(UserMapper.toDetailDto(createdUser));
     }
 
     @GetMapping
-    public List<?> getAllUsers(@RequestParam(required = false) Boolean detail) {
+    public ResponseEntity<?> getAllUsers(@RequestParam(required = false) Boolean detail) {
         List<User> users = userService.getAllUsers();
 
         if (Boolean.TRUE.equals(detail)) {
-            return users.stream().map(UserMapper::toDetailDto).toList();
+            return ResponseEntity.ok(users.stream().map(UserMapper::toDetailDto).toList());
         }
-        return users.stream().map(UserMapper::toDto).toList();
+        return ResponseEntity.ok(users.stream().map(UserMapper::toDto).toList());
     }
 
     @GetMapping("/{id}")
-    public Object getUser(@PathVariable Long id, @RequestParam(required = false) Boolean detail) {
-        User user = userService.getUserById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Uživatel nenalezen.")); // UDĚLAT SI SVOJÍ VÝJIMKU!
+    public ResponseEntity<?> getUser(@PathVariable Long id, @RequestParam(required = false) Boolean detail) {
+        User user = userService.getUserById(id);
 
-        return Boolean.TRUE.equals(detail) ? UserMapper.toDetailDto(user) : UserMapper.toDto(user);
+        if (Boolean.TRUE.equals(detail)) {
+            return ResponseEntity.ok(UserMapper.toDetailDto(user));
+        }
+        return ResponseEntity.ok(UserMapper.toDto(user));
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
-        return userService.updateUser(user.getId(), user.getName(), user.getSurname());
+    public ResponseEntity<?> updateUser(@RequestBody User user) {
+        User updatedUser = userService.updateUser(user.getId(), user.getName(), user.getSurname());
+
+        return ResponseEntity.ok(UserMapper.toDto(updatedUser));
     }
 
     @DeleteMapping("/{id}")
-    public Map<String, String> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Uživatel s ID: " + id + " byl úspěšně smazán.");
-        return response;
+
+        return ResponseEntity.noContent().build();
     }
 }
